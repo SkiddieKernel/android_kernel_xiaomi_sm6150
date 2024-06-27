@@ -1,0 +1,30 @@
+name: 'Build Kernel'
+on:
+  workflow_dispatch:
+env:
+  CHAT_ID: ${{ secrets.CHAT_ID }}
+  BOT_API: ${{ secrets.BOT_API }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  TZ: "Asia/Jakarta"
+jobs:
+  namespace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: arswb/debian:kernel
+    steps:
+      - uses: actions/checkout@v4
+      - name: setup
+        run: |
+          git config --global --add safe.directory '*'
+          git config --global --add url."https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github".insteadOf ssh://git@github
+          git config --global --add url."https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github".insteadOf https://github
+          git config --global --add url."https://${{ secrets.GH_TOKEN }}:x-oauth-basic@github".insteadOf git@github
+      - name: build
+        run: |
+          curl --header "Authorization: token ${{ secrets.GH_TOKEN }}" \
+          --header "Accept: application/vnd.github.v4.raw" \
+          --remote-name \
+          --location "https://raw.githubusercontent.com/arswb/Scripts/main/builder.sh"
+          chmod +x builder.sh
+          bash builder.sh clang
